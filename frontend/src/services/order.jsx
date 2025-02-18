@@ -33,7 +33,31 @@ export default function orderServices() {
             })
     }
 
+    const sendOrder = (orderData) => {
+        setOrderLoading(true)
 
-    return { getUserOrders, orderLoading, refetchOrders, ordersList }
+        fetch(`${url}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*', // Não dar interferencia quando rodar o front e back na mesma maquina
+            },
+            body: JSON.stringify(orderData)
+        })
+            .then((response) => response.json())
+            .then((result) => {
+                console.log(result)
+
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+            .finally(() => {
+                setOrderLoading(false)
+            })
+    }
+
+
+    return { getUserOrders, orderLoading, refetchOrders, ordersList, sendOrder }
 
 }
