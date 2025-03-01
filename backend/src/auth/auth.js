@@ -22,7 +22,7 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, passwor
 
     crypto.pbkdf2(password, saltBuffer, 310000, 16, 'sha256', (err, hashedPassword) => {
         if (err) {
-            return callback(null, false)
+            return callback(err)
         }
 
         const userPasswordBuffer = Buffer.from(user.password.buffer)
@@ -72,6 +72,7 @@ authRouter.post('/signup', async (req, res) => {
         const result = await Mongo.db
             .collection(collectionName)
             .insertOne({
+                fullname: req.body.fullname,
                 email: req.body.email,
                 password: hashedPassword,
                 salt,
@@ -80,7 +81,7 @@ authRouter.post('/signup', async (req, res) => {
         if (result.insertedId) {
             const user = await Mongo.db
                 .collection(collectionName)
-                .findOne({ _id: new ObjectId(result.insertedId) })
+                .findOne({ _id: new ObjectId(result.insertedId) }, { projections: { password: 0, salt: 0 } })
 
             const token = jwt.sign(user, 'secret')
 
@@ -122,6 +123,7 @@ authRouter.post('/login', (req, res) => {
         }
 
         const token = jwt.sign(user, 'secret')
+        console.log(user)
         return res.status(200).send({
             success: true,
             statusCode: 400,
